@@ -22,7 +22,8 @@ export const createPrivateKey = () => {
  * 66 character hexadecimal string.
  */
 export const getPublicKey = privateKey => {
-  // Your code here
+  const pubKey = secp256k1.publicKeyCreate(Buffer.from(privateKey, 'hex'));
+  return pubKey.toString('hex');
 };
 
 /**
