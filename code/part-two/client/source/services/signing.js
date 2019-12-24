@@ -60,6 +60,5 @@ export const sign = (privateKey, message) => {
     Buffer.from(messageHash, 'hex'),
     Buffer.from(privateKey, 'hex')
   );
-  console.log(signObj);
   return signObj.signature.toString('hex');
 };
