@@ -78,7 +78,6 @@ const verify = (publicKey, message, signature) => {
   const messageHash = createHash('sha256')
     .update(message)
     .digest('hex');
-
   const isValid = secp256k1.verify(
     Buffer.from(messageHash, 'hex'),
     Buffer.from(signature, 'hex'),

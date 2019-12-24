@@ -49,8 +49,8 @@ class Block {
   constructor(transactions, previousHash) {
     this.transactions = transactions;
     this.previousHash = previousHash;
-    this.nonce = null;
-    this.hash = null;
+    this.nonce = '1';
+    this.hash = this.calculateHash(this.nonce);
   }
 
   /**
@@ -69,6 +69,7 @@ class Block {
 
     this.hash = hash;
     this.nonce = nonce;
+    return hash;
   }
 }
 

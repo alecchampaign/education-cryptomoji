@@ -2,6 +2,7 @@
 
 const { createHash } = require('crypto');
 const signing = require('./signing');
+const { Block } = require('./blockchain');
 
 /**
  * A simple validation function for transactions. Accepts a transaction
@@ -11,8 +12,12 @@ const signing = require('./signing');
  *   - have been modified since signing
  */
 const isValidTransaction = transaction => {
-  // Enter your solution here
-
+  if (transaction.amount < 0) return false;
+  const message =
+    transaction.source + transaction.recipient + transaction.amount;
+  if (!signing.verify(transaction.source, message, transaction.signature))
+    return false;
+  return true;
 };
 
 /**
@@ -22,8 +27,17 @@ const isValidTransaction = transaction => {
  *   - they contain any invalid transactions
  */
 const isValidBlock = block => {
-  // Your code here
+  const compareHash = createHash('sha512')
+    .update(block.transactions + block.previousHash + block.nonce)
+    .digest('hex');
 
+  if (compareHash !== block.hash) return false;
+
+  for (let tx of block.transactions) {
+    if (isValidTransaction(tx) === false) return false;
+  }
+
+  return true;
 };
 
 /**
@@ -37,8 +51,20 @@ const isValidBlock = block => {
  *   - contains any invalid transactions
  */
 const isValidChain = blockchain => {
-  // Your code here
-
+  if (blockchain.blocks[0].previousHash !== null) {
+    return false;
+  }
+  for (let i = 1; i < blockchain.blocks.length; i++) {
+    const block = blockchain.blocks[i];
+    const prevBlock = blockchain.blocks[i - 1];
+    if (block.hash === null) return false;
+    if (block.previousHash !== prevBlock.hash) return false;
+    if (!isValidBlock(block)) return false;
+    for (let tx of block.transactions) {
+      if (!isValidTransaction(tx)) return false;
+    }
+  }
+  return true;
 };
 
 /**
@@ -46,9 +72,15 @@ const isValidChain = blockchain => {
  * blockchain, mutating it for your own nefarious purposes. This should
  * (in theory) make the blockchain fail later validation checks;
  */
-const breakChain = blockchain => {
-  // Your code here
 
+const breakChain = blockchain => {
+  const blockToSwap = blockchain.blocks[1];
+  const maliciousBlock = new Block(
+    blockToSwap.transactions,
+    blockchain.blocks[3].hash
+  );
+  maliciousBlock.transactions.pop();
+  blockchain.blocks[4] = maliciousBlock;
 };
 
 module.exports = {

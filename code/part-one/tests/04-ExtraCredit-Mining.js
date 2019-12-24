@@ -10,9 +10,7 @@ const {
   isValidMineableChain
 } = require('../mining');
 
-
-describe.skip('Mining module', function() {
-
+describe('Mining module', function() {
   describe('MineableTransaction', function() {
     let signer = null;
     let recipient = null;
@@ -60,7 +58,7 @@ describe.skip('Mining module', function() {
       const recipient = signing.getPublicKey(signing.createPrivateKey());
       const amount = Math.ceil(Math.random() * 100);
 
-      transactions = [ new MineableTransaction(signer, recipient, amount) ];
+      transactions = [new MineableTransaction(signer, recipient, amount)];
       previousHash = randomBytes(64).toString('hex');
 
       block = new MineableBlock(transactions, previousHash);
@@ -69,7 +67,6 @@ describe.skip('Mining module', function() {
     it('should be instantiated without a hash', function() {
       expect(!!block.hash).to.be.false;
     });
-
   });
 
   describe('MineableChain', function() {
@@ -127,22 +124,26 @@ describe.skip('Mining module', function() {
 
     it('should not add transactions to the chain until mined', function() {
       const originalHead = blockchain.getHeadBlock();
-      blockchain.addTransaction(new MineableTransaction(
-        signing.createPrivateKey(),
-        signing.getPublicKey(signing.createPrivateKey()),
-        Math.ceil(Math.random() * 100)
-      ));
+      blockchain.addTransaction(
+        new MineableTransaction(
+          signing.createPrivateKey(),
+          signing.getPublicKey(signing.createPrivateKey()),
+          Math.ceil(Math.random() * 100)
+        )
+      );
 
       expect(originalHead).to.deep.equal(blockchain.getHeadBlock());
     });
 
     it('should clear out pending transactions after mining', function() {
       // Add a transaction so we can mine a new block
-      blockchain.addTransaction(new MineableTransaction(
-        signing.createPrivateKey(),
-        signing.getPublicKey(signing.createPrivateKey()),
-        Math.ceil(Math.random() * 100)
-      ));
+      blockchain.addTransaction(
+        new MineableTransaction(
+          signing.createPrivateKey(),
+          signing.getPublicKey(signing.createPrivateKey()),
+          Math.ceil(Math.random() * 100)
+        )
+      );
       blockchain.mine(miner);
 
       const head = blockchain.getHeadBlock();
