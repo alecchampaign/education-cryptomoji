@@ -42,7 +42,9 @@ export const getPublicKey = privateKey => {
  *   // }
  */
 export const createKeys = () => {
-  // Your code here
+  const privateKey = createPrivateKey();
+  const publicKey = getPublicKey(privateKey);
+  return { privateKey, publicKey };
 };
 
 /**
