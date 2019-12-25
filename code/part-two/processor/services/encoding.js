@@ -25,7 +25,7 @@ const encode = object => {
  * the client version, there is no need to handle base64 strings.
  */
 const decode = buffer => {
-  // Your code here
+  return JSON.parse(buffer.toString());
 };
 
 module.exports = {
