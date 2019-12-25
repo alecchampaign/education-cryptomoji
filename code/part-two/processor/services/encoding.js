@@ -16,8 +16,8 @@
  *   your object's keys or random transactions may fail.
  */
 const encode = object => {
-  // Enter your solution here
-
+  const jsonObj = JSON.stringify(object, Object.keys(object).sort());
+  return Buffer.from(jsonObj);
 };
 
 /**
@@ -26,7 +26,6 @@ const encode = object => {
  */
 const decode = buffer => {
   // Your code here
-
 };
 
 module.exports = {

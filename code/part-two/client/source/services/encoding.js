@@ -28,5 +28,6 @@ export const encode = object => {
  *   base64 string -> Buffer -> JSON string -> object
  */
 export const decode = base64Str => {
-  // Your code here
+  const jsonStr = Buffer.from(base64Str, 'base64').toString();
+  return JSON.parse(jsonStr);
 };
