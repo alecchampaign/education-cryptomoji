@@ -58,7 +58,19 @@ export const createTransaction = (privateKey, payload) => {
  * transaction with no array.
  */
 export const createBatch = (privateKey, transactions) => {
-  // Your code here
+  const txns = Array.isArray(transactions) ? transactions : [transactions];
+  const txnSigs = txns.map(txn => txn.headerSignature);
+
+  const header = BatchHeader.encode({
+    signerPublicKey: getPublicKey(privateKey),
+    transactionIds: txnSigs
+  }).finish();
+
+  return Batch.create({
+    header,
+    headerSignature: sign(privateKey, header),
+    transactions: txns
+  });
 };
 
 /**
@@ -90,5 +102,12 @@ export const encodeBatches = batches => {
  * multiple payloads in an array.
  */
 export const encodeAll = (privateKey, payloads) => {
-  // Your code here
+  payloads = Array.isArray(payloads) ? payloads : [payloads];
+  const transactions = payloads.map(payload =>
+    createTransaction(privateKey, payload)
+  );
+  const batch = createBatch(privateKey, transactions);
+  const batchList = encodeBatches(batch);
+
+  return batchList;
 };
