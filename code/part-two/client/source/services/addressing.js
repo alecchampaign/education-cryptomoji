@@ -1,6 +1,5 @@
 import { createHash } from 'crypto';
 
-
 const NAMESPACE = '5f4d76';
 const PREFIXES = {
   COLLECTION: '00',
@@ -25,8 +24,11 @@ const PREFIXES = {
  *   // '5f4d7600ecd7ef459ec82a01211983551c3ed82169ca5fa0703ec98e17f9b534ffb797'
  */
 export const getCollectionAddress = (publicKey = null) => {
-  // Enter your solution here
-
+  if (publicKey === null) return NAMESPACE + PREFIXES.COLLECTION;
+  const pubKeyHash = createHash('sha512')
+    .update(publicKey)
+    .digest('hex');
+  return NAMESPACE + PREFIXES.COLLECTION + pubKeyHash.slice(0, 62);
 };
 
 /**
@@ -42,8 +44,23 @@ export const getCollectionAddress = (publicKey = null) => {
  *   console.log(ownerPrefix);  // '5f4d7601ecd7ef45'
  */
 export const getMojiAddress = (ownerKey = null, dna = null) => {
-  // Your code here
+  const domain = NAMESPACE + PREFIXES.MOJI;
+  if (ownerKey === null && dna === null) return domain;
 
+  const ownerHash = createHash('sha512')
+    .update(ownerKey)
+    .digest('hex')
+    .slice(0, 8);
+  if (dna === null) return domain + ownerHash;
+
+  return (
+    domain +
+    ownerHash +
+    createHash('sha512')
+      .update(dna)
+      .digest('hex')
+      .slice(0, 54)
+  );
 };
 
 /**
@@ -54,8 +71,16 @@ export const getMojiAddress = (ownerKey = null, dna = null) => {
  * otherwise returns the full address.
  */
 export const getSireAddress = (ownerKey = null) => {
-  // Your code here
+  const domain = NAMESPACE + PREFIXES.SIRE_LISTING;
+  if (ownerKey === null) return domain;
 
+  return (
+    domain +
+    createHash('sha512')
+      .update(ownerKey)
+      .digest('hex')
+      .slice(0, 62)
+  );
 };
 
 /**
@@ -72,5 +97,4 @@ export const getSireAddress = (ownerKey = null) => {
  */
 export const getOfferAddress = (ownerKey = null, moji = null) => {
   // Your code here
-
 };
