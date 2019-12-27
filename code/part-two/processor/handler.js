@@ -56,36 +56,47 @@ class MojiHandler extends TransactionHandler {
   apply(txn, context) {
     const updates = {};
     const mojiPrng = prng(txn.signature);
+
+    // don't accept poorly encoded payloads
+    if (txn.payload.toString() === '[object Object]') {
+      throw new InvalidTransaction('PAYLOAD IS POORLY ENCODED');
+    }
     const decodedPayload = decode(txn.payload);
 
     switch (decodedPayload.action) {
       case 'CREATE_COLLECTION':
-        const collection = { key: txn.header.signerPublicKey, moji: [] };
-        for (let i = 0; i < 3; i++) {
-          collection.moji.push(
-            createHash('sha512')
-              .update(mojiPrng(100).toString())
-              .digest('hex')
-              .slice(0, 36)
-          );
-        }
-        collection.moji = collection.moji.map(num => {
-          const addr = getMojiAddress(txn.header.signerPublicKey, num);
-          updates[addr] = encode({
-            dna: num,
-            owner: txn.header.signerPublicKey,
-            breeder: null,
-            sire: null,
-            bred: [],
-            sired: []
-          });
-          return addr;
-        });
-        updates[getCollectionAddress(txn.header.signerPublicKey)] = encode(
-          collection
-        );
+        const collectionAddr = getCollectionAddress(txn.header.signerPublicKey);
+        return new Promise((resolve, reject) => {
+          context.getState([collectionAddr]).then(state => {
+            if (state[collectionAddr].length > 0) {
+              reject(new InvalidTransaction('COLLECTION ALREADY EXISTS'));
+            }
 
-        return context.setState(updates);
+            const collection = { key: txn.header.signerPublicKey, moji: [] };
+            for (let i = 0; i < 3; i++) {
+              collection.moji.push(
+                createHash('sha512')
+                  .update(mojiPrng(100).toString())
+                  .digest('hex')
+                  .slice(0, 36)
+              );
+            }
+            collection.moji = collection.moji.map(numHash => {
+              const addr = getMojiAddress(txn.header.signerPublicKey, numHash);
+              updates[addr] = encode({
+                dna: numHash,
+                owner: txn.header.signerPublicKey,
+                breeder: null,
+                sire: null,
+                bred: [],
+                sired: []
+              });
+              return addr;
+            });
+            updates[collectionAddr] = encode(collection);
+            resolve(context.setState(updates));
+          });
+        });
       default:
         throw new InvalidTransaction('UNKOWN ACTION');
     }

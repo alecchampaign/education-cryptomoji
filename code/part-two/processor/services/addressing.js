@@ -95,7 +95,11 @@ const getOfferAddress = (ownerKey, addresses) => {
  *   console.log(isValid);  // false
  */
 const isValidAddress = address => {
-  // Your code here
+  if (typeof address !== 'string') return false;
+  if (address.length !== 70) return false;
+  if (address.slice(0, 6) !== NAMESPACE) return false;
+  if (Buffer.from(address, 'hex').length < 35) return false;
+  return true;
 };
 
 module.exports = {
