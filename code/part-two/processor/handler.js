@@ -2,7 +2,15 @@
 
 const { TransactionHandler } = require('sawtooth-sdk/processor/handler');
 const { InvalidTransaction } = require('sawtooth-sdk/processor/exceptions');
-const { decode } = require('./services/encoding');
+const { decode, encode } = require('./services/encoding');
+const {
+  getCollectionAddress,
+  getMojiAddress,
+  getSireAddress,
+  isValidAddress
+} = require('./services/addressing');
+const prng = require('./services/prng');
+const { createHash } = require('crypto');
 
 const FAMILY_NAME = 'cryptomoji';
 const FAMILY_VERSION = '0.1';
@@ -46,8 +54,41 @@ class MojiHandler extends TransactionHandler {
    *     array of state addresses. Only needed if attempting the extra credit.
    */
   apply(txn, context) {
+    const updates = {};
+    const mojiPrng = prng(txn.signature);
     const decodedPayload = decode(txn.payload);
-    console.log(decodedPayload);
+
+    switch (decodedPayload.action) {
+      case 'CREATE_COLLECTION':
+        const collection = { key: txn.header.signerPublicKey, moji: [] };
+        for (let i = 0; i < 3; i++) {
+          collection.moji.push(
+            createHash('sha512')
+              .update(mojiPrng(100).toString())
+              .digest('hex')
+              .slice(0, 36)
+          );
+        }
+        collection.moji = collection.moji.map(num => {
+          const addr = getMojiAddress(txn.header.signerPublicKey, num);
+          updates[addr] = encode({
+            dna: num,
+            owner: txn.header.signerPublicKey,
+            breeder: null,
+            sire: null,
+            bred: [],
+            sired: []
+          });
+          return addr;
+        });
+        updates[getCollectionAddress(txn.header.signerPublicKey)] = encode(
+          collection
+        );
+
+        return context.setState(updates);
+      default:
+        throw new InvalidTransaction('UNKOWN ACTION');
+    }
   }
 }
 
