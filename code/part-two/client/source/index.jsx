@@ -3,28 +3,22 @@ import ReactDOM from 'react-dom';
 import { BrowserRouter, Link, Route, Switch } from 'react-router-dom';
 import GeneratePrivKey from './components/generatePrivKey';
 import Login from './components/login';
+import User from './components/user';
 
 const App = props => {
-  const [privateKey, setPrivateKey] = useState('');
+  const [keys, setKeys] = useState('');
   return (
     <Switch>
       <Route path='/user'>
-        <div>LOGGED IN: {privateKey}</div>
+        <User privateKey={keys.privateKey} />
       </Route>
       <Route
         path='/'
         render={props => (
           <React.Fragment>
             <h1>Hello, Cryptomoji!</h1>
-            <GeneratePrivKey
-              setPrivateKey={setPrivateKey}
-              privateKey={privateKey}
-            />
-            <Login
-              {...props}
-              setPrivateKey={setPrivateKey}
-              privateKey={privateKey}
-            />
+            <GeneratePrivKey setKeys={setKeys} keys={keys} />
+            <Login {...props} setKeys={setKeys} keys={keys} />
           </React.Fragment>
         )}
       ></Route>
